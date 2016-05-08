@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>test</title>
+<style> * {max-height:9999px;}</style>
+<script src="extern/jquery-1.11.3.js"></script>
+<script src="emcc.js"></script>
+<script>
++function() {
+  'use strict';
+
+  var
+    addListEntry = Module.Runtime.addFunction(function(name, type, modified, size) { 
+        alert(Module.Pointer_stringify(name));
+        alert(type);
+        alert(modified);
+        alert(size);
+    }),
+    
+    documentReady = function() {
+      console.log(
+        Module.ccall(
+          'getEntries',
+          'number',
+          [
+            'string',
+            'number',
+            'number',
+            'number'
+          ],
+          [
+            "/Documents",
+            45,
+            96,
+            addListEntry
+          ]
+        )
+      );
+    },
+    
+    xxx;
+
+  $(document).ready(documentReady);
+}();
+</script>
+</head>
+<body>
+</body>
+</html>

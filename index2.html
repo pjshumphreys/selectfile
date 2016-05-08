@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>test</title>
+<style> * {max-height:9999px;}</style>
+<script src="extern/jquery-1.11.3.js"></script>
+<script>
++function() {
+  'use strict';
+
+  var
+    //file,
+    wrapper,
+    
+    documentReady = function() {
+      wrapper = $("#fileInputWrapper");
+      wrapper.on("change", "input", fileInputChange);
+    },
+    
+    fileInputChange = function(e) {
+      var fileReader = new FileReader();
+      fileReader.origFileData = this.files[0];
+      fileReader.readAsArrayBuffer(fileReader.origFileData);
+      fileReader.onloadend = fileReaderOnLoadEnd;
+    },
+
+    fileReaderOnLoadEnd = function(fileLoadedEvent) {
+      //$('#output').html(this.origFileData.name+', '+ JSON.stringify(new Int8Array(fileLoadedEvent.target.result)));
+      console.log(this.origFileData.name, new Int8Array(fileLoadedEvent.target.result));
+      /*
+      FS.createDataFile("/", file.name, new Int8Array(fileLoadedEvent.target.result), true, true);
+      FS.readFile("/file.name", {
+          encoding: binary
+        });
+      */
+      
+      wrapper.html('<input type="file"></input>');
+    };
+
+  $(document).ready(documentReady);
+}();
+</script>
+</head>
+<body>
+  <div id="fileInputWrapper"><input type="file"></div>
+  <div id="output"></div>
+</body>
+</html>

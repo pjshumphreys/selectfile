@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+
+<title>iScroll demo: 2d scroll</title>
+
+<script type="text/javascript" src="extern/iscroll-5.1.3.js"></script>
+<script type="text/javascript" src="extern/jquery-1.11.3.js"></script>
+
+<script type="text/javascript">
+
+var myScroll;
+  
+function loaded () {
+	myScroll = new IScroll('#wrapper', { tap:true,scrollX: true, bounce:false, freeScroll: true, });
+
+  var scroller = $('#scroller');
+  
+
+  var textarea = $('#cheese');
+  
+
+  var span = $('#gar');
+
+
+  span.text(textarea.val());
+  textarea.width(span[0].scrollWidth+20).height(span[0].scrollHeight+16).scrollTop(0);
+  textarea.scrollLeft(0);
+
+  scroller.css({
+      'min-height': textarea.height()+20,
+      'min-width': textarea.width()+20
+    });
+
+  myScroll.scrollTo(0, 0, 0);
+
+  myScroll.refresh();
+
+  $('#wrapper').on('scroll', function(){
+    var a = $(this);
+    var b = a.scrollTop(); 
+    var c = a.scrollLeft();
+
+    if(b != 0) {
+      a.scrollTop(0);
+      myScroll.scrollBy(0, -b, 0);
+    }
+
+    if(c != 0) {
+      a.scrollLeft(0);
+      myScroll.scrollBy(-c, 0, 0);
+    }
+  });
+}
+
+function fuzzle(){
+  var scroller = $('#scroller');
+  
+  var textarea = $('#cheese');
+  
+  var span = $('#gar');
+
+  var x = myScroll.x;
+  var y = myScroll.y;
+
+  var dox = $('#wrapper')[0].scrollWidth == $('#wrapper').width();
+  var doy = $('#wrapper')[0].scrollHeight == $('#wrapper').height();
+
+  span.text(textarea.val());
+  textarea.width(span[0].scrollWidth+20).height(span[0].scrollHeight+16).scrollTop(0);
+  textarea.scrollLeft(0);
+
+  scroller.css({
+      'min-height': textarea.height()+20,
+      'min-width': textarea.width()+20
+    });
+
+  if(dox) {
+    x = $('#wrapper').width()-(textarea.width()+20);
+  }
+  if(doy) {
+    y = $('#wrapper').height()-(textarea.height()+20);
+  }
+
+  myScroll.scrollTo(x, y, 0);
+
+  myScroll.refresh();
+}
+
+
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+
+</script>
+
+<style type="text/css">
+* {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+html {
+	-ms-touch-action: none;
+}
+
+*:focus {
+    outline: 0;
+}
+
+body,ul,li {
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+
+body {
+	font-size: 12px;
+	font-family: ubuntu, helvetica, arial;
+	overflow: hidden; /* this is important to prevent the whole page to bounce */
+}
+
+#header {
+	position: absolute;
+	z-index: 2;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 45px;
+	line-height: 45px;
+	background: #CD235C;
+	padding: 0;
+	color: #eee;
+	font-size: 20px;
+	text-align: center;
+	font-weight: bold;
+}
+
+#footer {
+	position: absolute;
+	z-index: 2;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 48px;
+	background: #444;
+	padding: 0;
+	border-top: 1px solid #444;
+}
+
+#wrapper {
+	position: absolute;
+	z-index: 1;
+	top: 45px;
+	bottom: 48px;
+	left: 0;
+	width: 100%;
+	background: #ccc;
+  overflow:hidden;
+}
+
+#scroller {
+	position: absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+	z-index: 1;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	-webkit-transform: translateZ(0);
+	-moz-transform: translateZ(0);
+	-ms-transform: translateZ(0);
+	-o-transform: translateZ(0);
+	transform: translateZ(0);
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	-webkit-text-size-adjust: none;
+	-moz-text-size-adjust: none;
+	-ms-text-size-adjust: none;
+	-o-text-size-adjust: none;
+	text-size-adjust: none;
+	background: #fff;
+}
+
+p {
+	font-size: 16px;
+	padding: 1.2em;
+	line-height: 200%;
+}
+
+.feck {
+    position:absolute;
+    font-family: monospace;
+    font-size: 12px;
+    height: 0;
+    line-height: 15px;
+    margin: 0;
+    padding:0;
+    border: 0;
+    overflow: hidden;
+    resize: none;
+    white-space: pre;
+    display:block;
+    background:#fff;
+    box-sizing:border-box;
+    top:0;
+}
+
+textarea.feck {
+  position:static;
+  z-index:1;
+  width:100%;
+  height:100%;
+  padding:10px;
+}
+</style>
+</head>
+<body onload="loaded()">
+<div id="header">iScroll</div>
+
+<div id="wrapper">
+	<div id="scroller"><span class="feck" id="gar"></span><textarea id="cheese" class="feck" onkeydown="fuzzle()" onkeyup="fuzzle()">abc</textarea></div>
+</div>
+
+<div id="footer"></div>
+
+</body>
+</html>
