@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>QueryCSV</title>
+<base href="/" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -49,7 +50,8 @@
         type="button" class="icon" id="selectAllButton"
         title="Select all">&#xe919;</button><button
         type="button" class="icon" id="renameButton" title="Rename"
-        onclick="prompt('Please enter a new name for\n&#34;untitled1.csv&#34;', '')">&#xe90d;</button></span><button
+        data-text="Please enter a new name for
+&#34;{0}&#34;">&#xe90d;</button></span><button
         type="button" class="icon"
         title="Cut">&#xe904;</button><button
         type="button" class="icon"
@@ -59,7 +61,6 @@
       <div id="wrapper2">
         <div id="scroller2">
           <ul><li
-            ><button type="button"><span class="icon">&#xe912;<span class="hidden"> Home</span></span></button></li><li
             class="active"><button type="button" >Documents</button></li>
           </ul>
         </div>

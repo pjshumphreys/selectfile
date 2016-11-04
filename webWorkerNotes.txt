@@ -1,0 +1,46 @@
+load from memfs via string into web worker when the first script is run.
+the web worker is kept around, and kept in sync with changes to the indexeddb (by modifiying the syncfs message).
+web worker posts a message back onto the main thread with changed files when done.
+the script opening runs a command, if the user attempts to go back while the command is running, a warning message will appear. If the user ignores the message the worker is terminated
+if possible, the indexeddb is directly used from within the web worker
+
+
+sync from indexeddb to memfs: get the full set of files and post to worker or other listeners
+
+
+sync from memfs to indexeddb: post the changes to the worker or other listeners
+
+
+sync from idb to memfs (populate = 0)
+
+sync from memfs to worker
+
+sync from worker to memfs
+
+sync from memfs to idb and worker (populate = 1)
+
+
+
+
+on new web worker:
+  read the memfs directly and convert the contents to a message
+
+
+on web worker changes:
+  recieve a list of the created and removed entries from the worker
+  create/remove memfs entries directly
+  create/remove indexeddb entries directly
+  *do not sync*
+  
+
+on sync memfs to indexed db:
+hook into the created and removed file lists and send them to the worker 
+
+
+
+{
+  reset:true,
+  callback: function,
+  create:[],
+  remove:[]
+}
