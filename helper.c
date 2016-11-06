@@ -1,4 +1,4 @@
-/*heler.c - The functions in this file support the user interface of the html5 version of querycsv
+/*helper.c - The functions in this file support the user interface of the html5 version of querycsv
 IMHO this stuff is better written in C */
 
 #include <stdio.h>
@@ -80,7 +80,7 @@ int statdir(
 }
 
 /*insert the name of a file or folder into our binary tree structure.
-This process will efectively sort the directory entries */
+This process will effectively sort the directory entries */
 void insert(
     struct fileEntry ** root,
     char * name,
