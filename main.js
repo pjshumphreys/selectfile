@@ -849,7 +849,7 @@
     displayPathName = $('#showPathName');
 
     $('#edit').on('click', gotoEditor);
-    $('#console').on('click', gotoConsole);
+    $('#launch').on('click', gotoConsole);
     $('#yes,#no').on('click', closeSaveDialog);
     $('#saveButton').on('click', saveClick);
 
