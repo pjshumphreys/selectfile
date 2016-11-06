@@ -716,6 +716,7 @@
   }
   
   function refreshFolder(err) {
+    console.log("refresh folder");
     currentFolderUl = $('.currentFolder .scroller ul');
     currentFolderUl.empty();
     Module.ccall(
@@ -858,7 +859,7 @@
     //end of event handlers
 
     Module.FS.mkdir('/Documents');
-    Module.FS.mount(Module.FS.filesystems.IDBFS, {}, '/Documents');
+    Module.FS.mount(Module.FS.filesystems.IDBWFS, {}, '/Documents');
   
     // sync from persisted state into memory and then
     // refresh the folder view

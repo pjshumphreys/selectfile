@@ -74,6 +74,8 @@ int statdir(
   return retval;
 }
 
+/*insert the name of a file or folder into our binary tree structure.
+This process will efectively sort the directory entries */
 void insert(
     struct fileEntry ** root,
     char * name,
@@ -186,6 +188,8 @@ void insert(
   }
 }
 
+//in order traverse the binary tree we have created,
+//calling the callback and freeing used memory as we go
 void walkAndCleanup(
     struct fileEntry **root,
     int callback
@@ -287,6 +291,7 @@ int getEntries(char* path, int sortBy, int sortDescending, int callback) {
   return success;
 }
 
+/* special function that creates a file if and only if it does not already exist. Otherwise it returns errno */
 int addFile(char *path) {
   int fd;
   errno = 0;

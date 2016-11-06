@@ -234,11 +234,11 @@ body {
 }
 
 .header #alt .iconGroup {
-    display: inline-block;
-    height: 43px;
-    max-width: 75px;
-    position: relative;
-    width: 12%;
+  display: inline-block;
+  height: 43px;
+  max-width: 75px;
+  position: relative;
+  width: 12%;
 }
 
 .header #alt .iconGroup .icon {
@@ -631,8 +631,8 @@ input[type=checkbox] + label {
   }
 
   input[type=radio] + label::before {
-      border: 2px solid #ccc;
-      border-radius: 30px;
+    border: 2px solid #ccc;
+    border-radius: 30px;
   }
 
   input[type=checkbox] + label::before {
@@ -711,20 +711,20 @@ input[type=checkbox] + label {
 #editor textarea,
 #editor span,
 #console pre {
-    position:absolute;
-    font-family: monospace;
-    font-size: 14px;
-    height: 0;
-    width:0;
-    line-height: 17px;
-    margin: 0;
-    padding:0;
-    border: 0;
-    overflow: hidden;
-    white-space: pre;
-    display:block;
-    background:#fff;
-    box-sizing:border-box;
+  position:absolute;
+  font-family: monospace;
+  font-size: 14px;
+  height: 0;
+  width:0;
+  line-height: 17px;
+  margin: 0;
+  padding:0;
+  border: 0;
+  overflow: hidden;
+  white-space: pre;
+  display:block;
+  background:#fff;
+  box-sizing:border-box;
 }
 
 #editor textarea,

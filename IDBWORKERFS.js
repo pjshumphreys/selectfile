@@ -1,60 +1,4 @@
-var IDBWFS = function() {
-  function isArray(a) {
-    return Object.prototype.toString.call(a) === '[object Array]';
-  }
-
-  function sortEntries(a,b) {
-    if ( a.path < b.path )
-      return -1;
-    if ( a.path > b.path )
-      return 1;
-    return 0;
-  }
-
-  function newMountIO(mountpoint) {
-    var mountIO = {
-      create: [],
-      remove: [],
-      toEmscripten: function(reset, create2, remove2) {
-        var a, i, len;
-        
-        if(reset === true) {  //clear out the cache of files used to figure out what to send to the worker
-          IDBFS.workerFiles[mountpoint] = {
-            mountpoint: mountpoint,
-            type: 'worker',
-            entries: {}
-          };
-        }
-
-        if(isArray(create2) && isArray(remove2)) {
-          create2.sort(sortEntries).forEach(function(entry) {
-            if(
-                !IDBFS.workerFiles[mountpoint].entries[entry.path] ||
-                IDBFS.workerFiles[mountpoint].entries[entry.path].timestamp <= entry.timestamp
-              ) {
-              IDBFS.workerFiles[mountpoint].entries[entry.path] = entry;
-            }
-          });
-
-          // sort paths in descending order so files are deleted before their
-          // parent directories
-          remove2.sort().reverse().forEach(function(path) {
-            if(IDBFS.workerFiles[mountpoint].entries[path]) {
-              delete IDBFS.workerFiles[mountpoint].entries[path];
-            }
-          });
-        }
-      }
-    };
-
-    return mountIO;
-  }
-
-  function pathToEntry(path) {
-    this.entries[path].path = path;
-    return this.entries[path];
-  }
-
+Module.FS.filesystems.IDBWFS = (function() {
   var IDBFS = {
     DB_VERSION: 21,
     DB_STORE_NAME: "FILE_DATA",
@@ -500,6 +444,62 @@ var IDBWFS = function() {
       });
     }
   };
+
+  function isArray(a) {
+    return Object.prototype.toString.call(a) === '[object Array]';
+  }
+
+  function sortEntries(a,b) {
+    if ( a.path < b.path )
+      return -1;
+    if ( a.path > b.path )
+      return 1;
+    return 0;
+  }
+
+  function newMountIO(mountpoint) {
+    var mountIO = {
+      create: [],
+      remove: [],
+      toEmscripten: function(reset, create2, remove2) {
+        var a, i, len;
+        
+        if(reset === true) {  //clear out the cache of files used to figure out what to send to the worker
+          IDBFS.workerFiles[mountpoint] = {
+            mountpoint: mountpoint,
+            type: 'worker',
+            entries: {}
+          };
+        }
+
+        if(isArray(create2) && isArray(remove2)) {
+          create2.sort(sortEntries).forEach(function(entry) {
+            if(
+                !IDBFS.workerFiles[mountpoint].entries[entry.path] ||
+                IDBFS.workerFiles[mountpoint].entries[entry.path].timestamp <= entry.timestamp
+              ) {
+              IDBFS.workerFiles[mountpoint].entries[entry.path] = entry;
+            }
+          });
+
+          // sort paths in descending order so files are deleted before their
+          // parent directories
+          remove2.sort().reverse().forEach(function(path) {
+            if(IDBFS.workerFiles[mountpoint].entries[path]) {
+              delete IDBFS.workerFiles[mountpoint].entries[path];
+            }
+          });
+        }
+      }
+    };
+
+    return mountIO;
+  }
+
+  function pathToEntry(path) {
+    this.entries[path].path = path;
+    return this.entries[path];
+  }
   
   return IDBFS;
-}();
+})();
