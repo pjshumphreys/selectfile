@@ -1,3 +1,6 @@
+/*heler.c - The functions in this file support the user interface of the html5 version of querycsv
+IMHO this stuff is better written in C */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -29,6 +32,8 @@ void strFree(char **str) {
   *str = NULL;
 }
 
+/* get file statistics for a given filename and parent folder path.
+We also duplicate the file name as the copy in the dirent structure will get overwritten when calling this fuunction for the next file found in the folder */
 int statdir(
     char *dir,
     struct dirent *direp,

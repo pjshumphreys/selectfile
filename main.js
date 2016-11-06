@@ -716,7 +716,6 @@
   }
   
   function refreshFolder(err) {
-    console.log("refresh folder");
     currentFolderUl = $('.currentFolder .scroller ul');
     currentFolderUl.empty();
     Module.ccall(

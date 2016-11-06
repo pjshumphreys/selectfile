@@ -13,7 +13,7 @@
             'extern/picup-2.1.2.js',
             'extern/jquery.history.js',
             'extern/jquery.animate.enhanced-1.11.js',
-            'emcc.js'
+            'helper.js'
           ], c);
       },
       c = function() {
