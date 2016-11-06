@@ -7,27 +7,29 @@
 # Make the "latest" SDK "active"
 #~/emsdk_portable/emsdk activate latest
 
-all: output.min.js.gz worker.min.js.gz apple-touch-icon-114x114-precomposed.png apple-touch-icon-120x120-precomposed.png apple-touch-icon-144x144-precomposed.png apple-touch-icon-152x152-precomposed.png apple-touch-icon-180x180-precomposed.png apple-touch-icon-72x72-precomposed.png apple-touch-icon-76x76-precomposed.png apple-touch-icon-precomposed.png touch-icon-192x192.png
+all: index.html.gz worker.min.js.gz apple-touch-icon-114x114-precomposed.png apple-touch-icon-120x120-precomposed.png apple-touch-icon-144x144-precomposed.png apple-touch-icon-152x152-precomposed.png apple-touch-icon-180x180-precomposed.png apple-touch-icon-72x72-precomposed.png apple-touch-icon-76x76-precomposed.png apple-touch-icon-precomposed.png touch-icon-192x192.png
 
-output.min.js.gz: output.min.js
-	gzip -9 < output.min.js > output.min.js.gz
+index.html.gz: index.html
+	gzip -9 < index.html > index.html.gz
 
+index.html: index-debug.html output.min.js style.min.css
+	node build-html.js
+	
 worker.min.js.gz: worker.min.js
 	gzip -9 < worker.min.js > worker.min.js.gz
 
-output.min.js: output.js
-	java -jar compiler.jar output.js > output.min.js
+style.min.css: style.css animations.css
+	cat style.css animations.css | java -jar yuicompressor-2.4.8.jar --type css > style.min.css
 
 worker.min.js: worker.js
 	java -jar compiler.jar worker.js > worker.min.js
 
-output.js: extern/jquery-1.11.3.js extern/b64.js extern/jquery.history.js extern/iscroll-5.1.3.js extern/picup-2.1.2.js extern/jquery.animate.enhanced-1.11.js helper.js msgs.js stringifyAndPostFactory.js main.js
-	rm -f output.js
-	cat extern/jquery-1.11.3.js extern/b64.js extern/jquery.history.js extern/iscroll-5.1.3.js extern/picup-2.1.2.js extern/jquery.animate.enhanced-1.11.js helper.js msgs.js stringifyAndPostFactory.js main.js >> output.js
+output.min.js: extern/jquery-1.11.3.js extern/b64.js extern/jquery.history.js extern/iscroll-5.1.3.js extern/picup-2.1.2.js extern/jquery.animate.enhanced-1.11.js helper.js main.js
+	cat extern/jquery-1.11.3.js extern/b64.js extern/jquery.history.js extern/iscroll-5.1.3.js extern/picup-2.1.2.js extern/jquery.animate.enhanced-1.11.js helper.js main.js | java -jar compiler.jar > output.min.js
 
-worker.js: emcc.js workermain.js msgs.js stringifyAndPostFactory.js 
+worker.js: emcc.js workermain.js
 	rm -f worker.js
-	cat emcc.js  msgs.js stringifyAndPostFactory.js workermain.js >> worker.js
+	cat emcc.js workermain.js >> worker.js
 
 helper.js: prefix.js helper.c postfix.js
 	source ~/emsdk_portable/emsdk_env.sh; emcc --closure 0 --minify 0 -s "EXPORT_NAME='Module'" --memory-init-file 0 -s "NO_EXIT_RUNTIME=1" -s "ASSERTIONS=1" -s "RESERVED_FUNCTION_POINTERS=1" -s "EXPORTED_FUNCTIONS=['_addFile','_getEntries','_malloc','UTF8ToString']" helper.c --pre-js prefix.js --post-js postfix.js -o helper.js 
@@ -66,9 +68,8 @@ touch-icon-192x192.png: icon.svg
 .PHONY: clean
 .PHONY: cleancode
 
-
 clean:
-	rm -rf output.min.js.gz worker.min.js.gz output.min.js worker.min.js output.js worker.js helper.js emcc.js apple-touch-icon-114x114-precomposed.png apple-touch-icon-120x120-precomposed.png apple-touch-icon-144x144-precomposed.png apple-touch-icon-152x152-precomposed.png apple-touch-icon-180x180-precomposed.png apple-touch-icon-72x72-precomposed.png apple-touch-icon-76x76-precomposed.png apple-touch-icon-precomposed.png touch-icon-192x192.png
+	rm -rf index.html.gz index.html style.min.css worker.min.js.gz output.min.js worker.min.js output.js worker.js helper.js emcc.js apple-touch-icon-114x114-precomposed.png apple-touch-icon-120x120-precomposed.png apple-touch-icon-144x144-precomposed.png apple-touch-icon-152x152-precomposed.png apple-touch-icon-180x180-precomposed.png apple-touch-icon-72x72-precomposed.png apple-touch-icon-76x76-precomposed.png apple-touch-icon-precomposed.png touch-icon-192x192.png
 
 cleancode:
-	rm -rf output.min.js.gz worker.min.js.gz output.min.js worker.min.js output.js worker.js helper.js emcc.js
+	rm -rf index.html.gz index.html style.min.css worker.min.js.gz output.min.js worker.min.js output.js worker.js helper.js emcc.js
