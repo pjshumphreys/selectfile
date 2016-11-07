@@ -1,15 +1,16 @@
-+function (JSON, MSGS) {
++function () {
   'use strict';
 
-  var global,
-  JSON,
-  MSGS,
+  var
   currentMessageId = 0,
   usingFakeIDB,
-  stringifyAndPostFactory,
   stringifyAndPost,
   xxx;
 
+  function doNothing() {
+
+  }
+  
   function messageHandler(e) { //set up the onmessage global function handler
     e = JSON.parse(e);
 
@@ -28,25 +29,56 @@
     }
   }
 
-function main(a, b, c) {
-    global = a;
-    JSON = global.JSON;
-    MSGS = b;
-    stringifyAndPostFactory = c;
-    stringifyAndPost;
+  function updateFakeIndexedDB(init, version, data) {
+    var i, len;
+    
+    Module.FS.syncfs(3, localPersisted); //web worker to local
+  }
 
+  function localPersisted() {
+    stringifyAndPost(MSGS.FAKE_IDB_UPDATED, version);
+  }
+  
+  function runCommand(commandLine) {
+    var changedFiles;
+    
+    //do whatever emscripten wants us to do to run the program.
+    
+    if(usingFakeIDB) {
+      //return the response code and contents of changed files
+      stringifyAndPost(MSGS.COMMAND_FINISHED, changedFiles);
+    }
+    else {
+      //if indexDB is functional in a web worker, then resync it then send the response code.
+      //TODO make this a callback
+      stringifyAndPost(MSGS.COMMAND_FINISHED);
+    }
+  }
+  
+  //pseudo code thats called whenever stdout or strerr are flushed. the main thread will probably append this text to a pre tag or something like it
+  function fflush(stream, text) {
+    stringifyAndPost(MSGS.OUTPUT_TEXT, {
+      stream: stream,
+      text:   text
+    });
+  }
+
+  function ready() {
     usingFakeIDB = !(global.indexedDB = global.indexedDB || global.mozIndexedDB || global.webkitIndexedDB || global.msIndexedDB),
 
     stringifyAndPost = stringifyAndPostFactory(global, JSON);
     global.onmessage = messageHandler;
 
     Module.FS.mkdir('/Documents');
-    Module.FS.mount(Module.FS.filesystems.MEMFS, {}, '/Documents');
+    Module.FS.mount(Module.FS.filesystems.IDBWFS, {
+      fromEmscripten:       fromEmscripten,
+      toEmscriptenReciever: toEmscriptenReciever
+    }, '/Documents');
   
     // sync from persisted state into memory and then
     // refresh the folder view
-    //Module.FS.syncfs(true, refreshFolder);
+    Module.FS.syncfs(usingFakeIDB?3:true, refreshFolder);
   }
 
   ready();
-}(global.JSON);
+}();
