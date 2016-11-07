@@ -3,19 +3,19 @@ output interface is working correctly*/
 
 #include <stdio.h>
 
-/*the real entry point for the html5 version of querycsv. we can't use main as I believe it's treated specially on emcripten and so can only be called once */
-int realmain(int argc, char **argv) {
+/*the real entry point for the html5 version of querycsv. we can't use main as I believe it's treated specially on emscripten and so can only be called once */
+int realmain(int argc, char *argv) {
   int i;
 
   printf("Hello world!\nProgram arguments:\n");
 
-  for(i = 0; i < argc; i++) {
-    printf("%s\n", argv[i]);
-  }
+  //for(i = 0; i < argc; i++) {
+    printf("%d: %s\n", argc, argv);
+  //}
 
   //I believe this type coercion is valid in emscripten.
   //It should always print 0
-  printf("%d\n", (int)argv[argc]);
+  //printf("%d\n", (int)argv[argc]);
   
   return 0;
 }

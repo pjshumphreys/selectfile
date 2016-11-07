@@ -64,8 +64,8 @@ FS.filesystems.IDBWFS = (function() {
     workerIO: {},
     workerFiles: {},
     indexedDB: function() {
-      if (typeof indexedDB !== 'undefined') {
-        return indexedDB;
+      if (typeof self.indexeddb !== 'undefined') {
+        return self.indexeddb;
       }
 
       var ret = null;
@@ -74,7 +74,7 @@ FS.filesystems.IDBWFS = (function() {
         ret = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
       }
 
-      assert(ret, 'IDBFS used, but indexedDB not supported');
+      //assert(ret, 'IDBFS used, but indexedDB not supported');
 
       return ret;
     },
@@ -130,7 +130,7 @@ FS.filesystems.IDBWFS = (function() {
               var src = populate ? remote : local;
               var dst = populate ? local : remote;
 
-              IDBFS.reconcile(src, dst, callback, IDBFS.workerFiles[mount.mountpoint]);
+              IDBFS.reconcile(src, dst, callback);
             });
           });
         } break;
@@ -372,18 +372,26 @@ FS.filesystems.IDBWFS = (function() {
       };
     },
     loadWorkerEntry: function(store, path, callback) {
-      
+      if(store.entries.hasOwnProperty(path)) {
+        callback(null, store.entries[path]);
+      }
+      else {
+        callback(true);
+      }
     },
     storeWorkerEntry: function(store, path, entry, callback) {
-      
+      store.entries[path] = {timestamp: entry.timestamp};
+      callback(null);
     },
     removeWorkerEntry: function(store, path, callback) {
-
+      delete store.entries[path];
+      callback(null);
     },      
     reconcile: function(src, dst, callback, worker) {
+      var store;
       var total = 0;
 
-      var create = [];
+      var create = [],create2 = [];
       Object.keys(src.entries).forEach(function(key) {
         var e = src.entries[key];
         var e2 = dst.entries[key];
@@ -405,17 +413,19 @@ FS.filesystems.IDBWFS = (function() {
       });
       
       if (!total) {
+        if(dst.type === 'worker' && IDBFS.workerIO[dst.mountpoint].fromEmscripten instanceof Function) {  IDBFS.workerIO[dst.mountpoint].fromEmscripten([], []);
+        }
+        
         return callback(null);
       }
 
       var errored = false;
       var completed = 0;
 
-
       if(src.type === 'remote' || dst.type === 'remote') {
         var db = src.type === 'remote' ? src.db : dst.db;
         var transaction = db.transaction([IDBFS.DB_STORE_NAME], 'readwrite');
-        var store = transaction.objectStore(IDBFS.DB_STORE_NAME);
+        store = transaction.objectStore(IDBFS.DB_STORE_NAME);
 
         transaction.onerror = function(e) {
           done(this.error);
@@ -423,7 +433,7 @@ FS.filesystems.IDBWFS = (function() {
         };
       }
       else {
-        var store;
+        store = src.type === 'worker' ? src : dst;
       }
       
       function done(err) {
@@ -434,19 +444,18 @@ FS.filesystems.IDBWFS = (function() {
           }
           return;
         }
-        if (++completed >= total) {
-          if(src.type === 'local' && worker) {
-            return IDBFS.reconcile(src, worker, callback);
+        if (++completed >= total) {          
+          if(dst.type === 'worker' && IDBFS.workerIO[dst.mountpoint].fromEmscripten instanceof Function) {
+            IDBFS.workerIO[dst.mountpoint].fromEmscripten(
+              create2,
+              remove);
+
+            create2.forEach(function(entry){
+              delete entry.path
+            });
           }
-          else {
-            if(dst.type === 'worker' && IDBFS.workerIO[name].fromEmscripten instanceof Function) {
-              IDBFS.workerIO[name].fromEmscripten(
-                create.map(pathToEntry, src),
-                remove);
-            }
-            
-            return callback(null);
-          }
+          
+          return callback(null);
         }
       }
 
@@ -455,7 +464,13 @@ FS.filesystems.IDBWFS = (function() {
       create.sort().forEach(function(path) {
         if (dst.type === 'local') {
           if(src.type == 'worker'){
-            IDBFS.storeLocalEntry(path, src.entries[path], done);
+            IDBFS.loadWorkerEntry(store, path, function(err, entry) {
+              if (err) {
+                return done(err);
+              }
+              
+              IDBFS.storeLocalEntry(path, entry, done);
+            });
           }
           else {
             IDBFS.loadRemoteEntry(store, path, function(err, entry) {
@@ -474,6 +489,10 @@ FS.filesystems.IDBWFS = (function() {
             }
             
             IDBFS.storeWorkerEntry(dst, path, entry, done);
+
+            entry.path = path;
+            
+            create2.push(entry);
           });
         }
         else {
@@ -517,9 +536,7 @@ FS.filesystems.IDBWFS = (function() {
 
   function newMountIO(mountpoint) {
     var mountIO = {
-      create: [],
-      remove: [],
-      toEmscripten: function(reset, create2, remove2) {
+      toEmscripten: function(reset, create, remove) {
         var a, i, len;
         
         if(reset === true) {  //clear out the cache of files used to figure out what to send to the worker
@@ -530,19 +547,20 @@ FS.filesystems.IDBWFS = (function() {
           };
         }
 
-        if(isArray(create2) && isArray(remove2)) {
-          create2.sort(sortEntries).forEach(function(entry) {
+        if(isArray(create) && isArray(remove)) {
+          create.forEach(function(entry) {
             if(
                 !IDBFS.workerFiles[mountpoint].entries[entry.path] ||
                 IDBFS.workerFiles[mountpoint].entries[entry.path].timestamp <= entry.timestamp
               ) {
               IDBFS.workerFiles[mountpoint].entries[entry.path] = entry;
+              delete entry.path;
             }
           });
 
           // sort paths in descending order so files are deleted before their
           // parent directories
-          remove2.sort().reverse().forEach(function(path) {
+          remove.forEach(function(path) {
             if(IDBFS.workerFiles[mountpoint].entries[path]) {
               delete IDBFS.workerFiles[mountpoint].entries[path];
             }
@@ -553,11 +571,6 @@ FS.filesystems.IDBWFS = (function() {
 
     return mountIO;
   }
-
-  function pathToEntry(path) {
-    this.entries[path].path = path;
-    return this.entries[path];
-  }
   
   return IDBFS;
 })();
@@ -566,7 +579,7 @@ Module["FS"] = FS;
 
 return Module;
 
-})(window,document);
+})();
 
 var stringifyAndPostFactory = function(object, JSON) { 
   return function(messageType, data) {
@@ -592,7 +605,7 @@ var MSGS = (function() {
   
   for(i in constantsList) {
     if(constantsList.hasOwnProperty(i)) {
-      MSGS[constantsList[i]] = i;
+      MSGS[constantsList[i]] = parseInt(i, 10);
     }
   }
   

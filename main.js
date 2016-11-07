@@ -36,6 +36,7 @@
     usingFakeIDB,
     toEmscripten,
     commandsToRun = [],
+    stringifyAndPost,
 
     
     addListEntry = Module.Runtime.addFunction(function(name, type, modified, size) { 
@@ -336,6 +337,7 @@
         } break;
         
         case "console": {
+          runCommand("querycsv " + JSON.stringify(currentPath));
           pageFromRight('console', true);
         } break;
       }
@@ -776,11 +778,11 @@
   }
   
   function messageHandler(e) {
-    e = JSON.parse(e);
+    e = JSON.parse(e.data);
     
     switch(e.messageType) {
       case MSGS.IDB_STATUS: { //returns whether IndexedDB is available in the worker
-        WorkerIDBStatusRecieved(e.data);
+        workerIDBStatusRecieved(e.data);
       } break;
 
       case MSGS.FAKE_IDB_UPDATED: { //the copy of the indexedDB in the worker is now synchronized
@@ -791,7 +793,7 @@
         console.log(e.data);
       } break;
       
-      case COMMAND_FINISHED: {   //the command we asked the worker to run has completed. store any file contents returned  into IndexedDB
+      case MSGS.COMMAND_FINISHED: {   //the command we asked the worker to run has completed. store any file contents returned  into IndexedDB
         commandFinished(e.data);
       } break;
     }
@@ -799,7 +801,7 @@
   
   function fromEmscripten(create, remove) {
     stringifyAndPost(MSGS.UPDATE_FAKE_IDB, {
-      create: create
+      create: create,
       remove: remove
     });
   }
@@ -809,7 +811,7 @@
   }
   
   function newWorker() {
-    worker = new Worker('worker.js');
+    worker = new Worker('worker.min.js');
     
     stringifyAndPost = stringifyAndPostFactory(worker, JSON);
     worker.addEventListener('message', messageHandler, false);
@@ -835,7 +837,7 @@
   
   function continueRunCommand() {
     if (usingFakeIDB) {
-      Module.FS.syncfs(3, doNothing); //local to worker message
+      Module.FS.syncfs(3, doNothing); //memfs to worker
     }
     else {
       workerIDBUpdated();
@@ -849,12 +851,12 @@
   function commandFinished(data) {
     if(usingFakeIDB) {
       toEmscripten(false, data.created, data.removed);
-      Module.FS.syncfs(3, persistLocal); //web worker to local
+      Module.FS.syncfs(4, persistLocal); //worker to memfs
     }
   }
-  
+
   function persistLocal() {
-    Module.FS.syncfs(false, doNothing); //local to indexeddb and web worker
+    Module.FS.syncfs(false, refreshFolder); //memfs to indexeddb
   }
   
   function terminateWorker() {
@@ -923,7 +925,7 @@
     myScroll.on('scrollStart', stopTap);
     myScroll3.on('scrollCancel', stopTap);
     myScroll3.on('scrollStart', stopTap);
-
+  
     $('.fileList').
       on('mousedown touchstart', 'button', startTap).
       on('animationend', 'button', longTap).
@@ -958,6 +960,8 @@
 
     //end of event handlers
 
+    newWorker();
+
     Module.FS.mkdir('/Documents');
 
     Module.FS.mount(Module.FS.filesystems.IDBWFS, {
@@ -965,8 +969,6 @@
       toEmscriptenReciever: toEmscriptenReciever
     }, '/Documents');
 
-    newWorker();
-      
     // sync from persisted state into memory and then
     // refresh the folder view
     Module.FS.syncfs(true, refreshFolder); //indexeddb to local
