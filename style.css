@@ -525,15 +525,6 @@ body {
   color:#333;
 }
 
-#console pre {
-  background: #000;
-  color: #ccc;
-  font-family: monospace;
-  font-size: 12px;
-  line-height: 15px;
-  white-space: pre;
-}
-
 #editor .mess {
   border: 0;
   font-family: monospace;
@@ -709,8 +700,7 @@ input[type=checkbox] + label {
 }
 
 #editor textarea,
-#editor span,
-#console pre {
+#editor span {
   position:absolute;
   font-family: monospace;
   font-size: 14px;
@@ -727,8 +717,7 @@ input[type=checkbox] + label {
   box-sizing:border-box;
 }
 
-#editor textarea,
-#console pre {
+#editor textarea {
   position:static;
   width:100%;
   height:100%;
@@ -737,8 +726,19 @@ input[type=checkbox] + label {
 }
 
 #console pre {
+  box-sizing:border-box;
+  display:block;
+  padding:10px;
+  position:static;
   background: #000;
-  color:#ccc;
+  color: #ccc;
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 15px;
+  white-space: pre;
+  min-width:100%;
+  min-height:100%;
+  float:left;
 }
 
 .ActionWrapper .saveDialog {

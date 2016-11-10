@@ -37,7 +37,9 @@
     toEmscripten,
     commandsToRun = [],
     stringifyAndPost,
-
+    consoleWrapper,
+    consoleScroller,
+    consolePre,
     
     addListEntry = Module.Runtime.addFunction(function(name, type, modified, size) { 
       var a, b;
@@ -337,11 +339,44 @@
         } break;
         
         case "console": {
-          runCommand("querycsv " + JSON.stringify(currentPath));
+          $('#console pre').text("");
           pageFromRight('console', true);
         } break;
       }
     }
+  }
+
+  function consoleRefresh(lineHeight) {
+    var
+        x = myScroll5.x,
+        y = myScroll5.y,
+        doX = consoleWrapper[0].scrollWidth == consoleWrapper.width(),
+        doY = consoleWrapper[0].scrollHeight == consoleWrapper.height();
+
+    consolePre.scrollLeft(0);
+
+    consolePre.height("auto");
+
+    consoleScroller.css({
+        'min-height': consolePre.height()+20,
+        'min-width': consolePre.width()+20
+      });  
+
+    if(doX) {
+      x = consoleWrapper.width()-(consolePre.width()+20);
+    }
+    if(doY) {
+      y = consoleWrapper.height()-(consolePre.height()+20);
+    }
+
+    if(lineHeight) {
+      y-=lineHeight;
+    }
+
+    consolePre.removeAttr("style");
+
+    myScroll5.scrollTo(x, y, 0);
+    myScroll5.refresh();
   }
 
   function updateDownloadLink() {
@@ -427,7 +462,8 @@
         break;
         
         case "console":
-          myScroll5.refresh();
+          consoleRefresh();
+          runCommand(currentPath);
         break;
       }
     }
@@ -790,13 +826,19 @@
       } break;
       
       case MSGS.OUTPUT_TEXT: {   //output to console
-        console.log(e.data);
+        output_text(e.data.text, e.data.isStderr);
       } break;
       
       case MSGS.COMMAND_FINISHED: {   //the command we asked the worker to run has completed. store any file contents returned  into IndexedDB
         commandFinished(e.data);
       } break;
     }
+  }
+
+  function output_text(text, isStderr) {
+    consolePre.append($('<span />').text(text).css("font-weight", isStderr?"bold":"normal"), $('<br/>'));
+
+    consoleRefresh(17);
   }
   
   function fromEmscripten(create, remove) {
@@ -811,7 +853,7 @@
   }
   
   function newWorker() {
-    worker = new Worker('worker.min.js');
+    worker = new Worker(WORKERFILENAME);
     
     stringifyAndPost = stringifyAndPostFactory(worker, JSON);
     worker.addEventListener('message', messageHandler, false);
@@ -840,7 +882,7 @@
       Module.FS.syncfs(3, doNothing); //memfs to worker
     }
     else {
-      workerIDBUpdated();
+      Module.FS.syncfs(false, workerIDBUpdated); //memfs to indexedDB
     }
   }
   
@@ -852,6 +894,9 @@
     if(usingFakeIDB) {
       toEmscripten(false, data.created, data.removed);
       Module.FS.syncfs(4, persistLocal); //worker to memfs
+    }
+    else {
+      Module.FS.syncfs(true, refreshFolder); //indexeddb to memfs
     }
   }
 
@@ -912,11 +957,14 @@
         bounce : false,
         deceleration : 0.0001,
         mouseWheel : true,
-        click: true,
         scrollX: true,
-        freeScroll: true
+        freeScroll: true,
+        tap:true
       });
 
+    consoleWrapper = $('#console');
+    consoleScroller = consoleWrapper.find('.scroller');
+    consolePre = consoleScroller.find('pre');
     //start of event handlers
 
     $('.pt-perspective').on('animationend', animEnd);

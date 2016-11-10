@@ -31,7 +31,7 @@ function jsRead(err, data) {
     process.exit(1);
   }
 
-  script = data.toString();
+  script = data.toString().replace(/\/\*([\s\S]*?)\*\//g,"").replace(/\n\n*/g, "\n").replace("WORKERFILENAME", '"worker.min.js"');
 
   fs.readFile('style.min.css', 'utf8', cssRead);
 }

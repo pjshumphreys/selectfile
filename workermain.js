@@ -6,6 +6,7 @@
   usingFakeIDB,
   stringifyAndPost,
   toEmscripten,
+  commandQueue = [],
   xxx;
 
   function doNothing() {
@@ -37,7 +38,7 @@
       } break;
       
       case MSGS.RUN_COMMAND: {   //run the specified command line, may post back changed file contents if IndexedDB doesn't work in a web worker
-        runCommand(e.data.commandLine);
+        runCommand(e.data);
       }
     }
   }
@@ -47,15 +48,27 @@
   }
   
   function runCommand(commandLine) {
-    var e;
-    
-    //do whatever emscripten wants us to do to run the program.
+    var path = commandLine.substring(0, commandLine.lastIndexOf("/"));
 
-    e = Module.ccall(
-            'realmain',
+    stdout(path+"/>querycsv "+JSON.stringify(commandLine));
+
+    commandQueue.push([path, commandLine]);
+
+    if(!usingFakeIDB) {
+      Module.FS.syncfs(true, runCommand2);  //indexeddb to memfs
+    }
+    else {
+      runCommand2();
+    }
+  }
+  
+  function runCommand2() {
+    //do whatever emscripten wants us to do to run the program.
+    var e = Module.ccall(
+            'wrapmain',
             'number',
-            ['number', 'string'],
-            [2, commandLine]
+            ['string','string'],
+            commandQueue.shift()
           );
     
     if(usingFakeIDB) {
@@ -74,11 +87,17 @@
   
   //pseudo code thats called whenever stdout or strerr are flushed. the main thread will probably append this text to a pre tag or something like it
   function stdout(text) {
-    stringifyAndPost(MSGS.OUTPUT_TEXT, text);
+    stringifyAndPost(MSGS.OUTPUT_TEXT, {
+      text:text,
+      isStderr :false
+    });
   }
 
   function stderr(text) {
-    stringifyAndPost(MSGS.OUTPUT_TEXT, text);
+    stringifyAndPost(MSGS.OUTPUT_TEXT, {
+      text:text,
+      isStderr :true
+    });
   }
 
   function ready() {

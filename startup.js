@@ -1,3 +1,4 @@
+var WORKERFILENAME = 'worker.js';
 +function(a) {
   var b = a.createElement("script");
   b.setAttribute("src","extern/script.js");
