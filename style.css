@@ -725,7 +725,7 @@ input[type=checkbox] + label {
   resize: none;
 }
 
-#console pre {
+#console .pre {
   box-sizing:border-box;
   display:block;
   padding:10px;
@@ -735,7 +735,6 @@ input[type=checkbox] + label {
   font-family: monospace;
   font-size: 14px;
   line-height: 15px;
-  white-space: pre;
   min-width:100%;
   min-height:100%;
   float:left;

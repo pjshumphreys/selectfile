@@ -339,7 +339,7 @@
         } break;
         
         case "console": {
-          $('#console pre').text("");
+          $('#console .pre').text("");
           pageFromRight('console', true);
         } break;
       }
@@ -351,31 +351,48 @@
         x = myScroll5.x,
         y = myScroll5.y,
         doX = consoleWrapper[0].scrollWidth == consoleWrapper.width(),
-        doY = consoleWrapper[0].scrollHeight == consoleWrapper.height();
+        doY = consoleWrapper[0].scrollHeight == consoleWrapper.height(),
+        moo = 0, maa = 0, doo = false, obj = {};
 
     consolePre.scrollLeft(0);
 
-    consolePre.height("auto");
+    consoleScroller.removeAttr('style');
+    moo = consolePre.width()+20;
+    maa = consolePre.height()+20;
 
-    consoleScroller.css({
-        'min-height': consolePre.height()+20,
-        'min-width': consolePre.width()+20
-      });  
+    if(moo>consoleScroller.width()) {
+      obj['min-width'] = moo;
+      doo = true;
+    }
+    
+    if(maa>consoleScroller.height()) {
+      obj['min-height'] = maa;
+      doo = true;
+    }
+    
+    if(doo) {
+      consoleScroller.css(obj);
+      doo = false;
+    }
 
     if(doX) {
-      x = consoleWrapper.width()-(consolePre.width()+20);
+      x = consoleWrapper.width()-moo;
+      doo = true;
     }
     if(doY) {
-      y = consoleWrapper.height()-(consolePre.height()+20);
+      y = consoleWrapper.height()-maa;
+      doo = true;
     }
 
     if(lineHeight) {
       y-=lineHeight;
+      doo = true;
     }
 
-    consolePre.removeAttr("style");
-
-    myScroll5.scrollTo(x, y, 0);
+    if(doo) {
+      myScroll5.scrollTo(x, y, 0);
+    }
+    
     myScroll5.refresh();
   }
 
@@ -962,9 +979,15 @@
         tap:true
       });
 
+    $(window).resize(function() {
+      if(currentState == "console") {
+        consoleRefresh();
+      }
+    });
+
     consoleWrapper = $('#console');
     consoleScroller = consoleWrapper.find('.scroller');
-    consolePre = consoleScroller.find('pre');
+    consolePre = consoleScroller.find('.pre');
     //start of event handlers
 
     $('.pt-perspective').on('animationend', animEnd);
