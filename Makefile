@@ -32,7 +32,7 @@ worker.js: emcc.js workermain.js
 	cat emcc.js workermain.js >> worker.js
 
 helper.js: prefix.js helper.c postfix.js
-	source ~/emsdk_portable/emsdk_env.sh; emcc -O2 --closure 0 --minify 0 -s ASM_JS=2 --memory-init-file 0 -s "NO_EXIT_RUNTIME=1" -s "ASSERTIONS=1" -s "RESERVED_FUNCTION_POINTERS=1" -s "EXPORTED_FUNCTIONS=['_addFile','_getEntries','_malloc','UTF8ToString']" helper.c --pre-js prefix.js --post-js postfix.js -o helper.js 
+	source ~/emsdk_portable/emsdk_env.sh; emcc -O2 --closure 0 --minify 0 -s ASM_JS=2 --memory-init-file 0 -s "NO_EXIT_RUNTIME=1" -s "ASSERTIONS=1" -s "RESERVED_FUNCTION_POINTERS=1" -s "EXPORTED_FUNCTIONS=['_folderExists','_rmrf','_addFile','_getEntries','_malloc','UTF8ToString']" helper.c --pre-js prefix.js --post-js postfix.js -o helper.js 
 
 emcc.js: prefix.js emcc.c postfix.js
 	source ~/emsdk_portable/emsdk_env.sh; emcc -O2 --closure 0 --minify 0 -s ASM_JS=2 --memory-init-file 0 -s "NO_EXIT_RUNTIME=1" -s "ASSERTIONS=1" -s "EXPORTED_FUNCTIONS=['_wrapmain','_malloc','UTF8ToString']" emcc.c --pre-js prefix.js --post-js postfix.js -o emcc.js

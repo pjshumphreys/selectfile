@@ -186,7 +186,7 @@
               depth: 2
             },
             d.title,
-            btn.attr('data-filepath')
+            btn.attr('data-filepath').slice(0, -1)
           );
         }
         else {
@@ -261,7 +261,7 @@
   
   function serviceStateQueue() {
     if(inactive) {
-      inactive = !1;
+      inactive = false;
 
       var a = stateQueue.shift();
 
@@ -277,21 +277,24 @@
             $('.selected').removeClass('selected');
             updateSelection();
             currentPath = a.newState.data.path;
-            inactive = !0;
+            inactive = true;
           }
           else if(a.currentState === 'folder') {
             $('.selected').removeClass('selected');
             updateSelection();
 
-            //$(".fileList").toggleClass("currentFolder");
-
-            if(a.newState.data.path.length > currentPath.length) {
-              currentPath = a.newState.data.path;
-              folderFromRight(true);
+            if(currentPath != a.newState.data.path) {
+              if(a.newState.data.path.length > currentPath.length) {
+                currentPath = a.newState.data.path;
+                folderFromRight(true);
+              }
+              else {
+                currentPath = a.newState.data.path;
+                folderFromLeft(false);
+              }
             }
             else {
-              currentPath = a.newState.data.path;
-              folderFromLeft(false);
+              inactive = true;
             }
           }
           else {
@@ -450,7 +453,7 @@
     var a = $('.pt-page-old');
 
     if(a.length === 1) {
-      inactive = !0;
+      inactive = true;
 
       a
         .removeClass('pt-page-old')
@@ -700,7 +703,12 @@
     var a = $(this);
 
     if(a.hasClass('folder')) {
-      Module.FS.rmdir(currentPath+a.find('.filename').text());
+      Module.ccall(
+        'rmrf',
+        'number',
+        ['string'],
+        [currentPath+a.find('.filename').text()]
+      );
     }
     else {
       Module.FS.unlink(currentPath+a.find('.filename').text());
@@ -1033,6 +1041,9 @@
 
     newWorker();
 
+    Module.print = console.log;
+    Module.printErr = console.error;
+
     Module.FS.mkdir('/Documents');
 
     Module.FS.mount(Module.FS.filesystems.IDBWFS, {
@@ -1042,16 +1053,34 @@
 
     // sync from persisted state into memory and then
     // refresh the folder view
-    Module.FS.syncfs(true, refreshFolder); //indexeddb to local
+    Module.FS.syncfs(true, setFolder); //indexeddb to local 
+  }
 
+  function setFolder() {
     //if the url is "/", or doesn't begin with "/Documents" doesn't refer to a folder or doesn't exist then set it to "/Documents"
+    var url = decodeURIComponent(History.getState().hash.replace(/\?.*/, "")).replace(/\/(\/)*/g, "/").replace(/\/$/, "");
+
+    if(url.match(/\/Documents\/.+/) && Module.ccall(
+        'folderExists',
+        'number',
+        ['string'],
+        [url]
+    )) {
+      currentPath = url+"/";
+    }
+    else {
+      url = "/Documents"
+    }
+
+    refreshFolder();
+
     History.replaceState({
         type: "folder",
-        path: "/Documents/",
+        path: currentPath,
         depth: 1
       },
       d.title,
-      "/Documents"
+      url
     );
   }
 

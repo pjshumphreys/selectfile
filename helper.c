@@ -1,6 +1,9 @@
 /*helper.c - The functions in this file support the user interface of the html5 version of querycsv
 IMHO this stuff is better written in C */
 
+#define _XOPEN_SOURCE 500
+#include <stdio.h>
+#include <ftw.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -309,4 +312,24 @@ int addFile(char *path) {
   }
   
   return 0;
+}
+
+int folderExists(char* folderName) {
+  struct stat sb;
+
+  return stat(folderName, &sb) == 0 && S_ISDIR(sb.st_mode);
+}
+
+int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf) {
+  int rv = (S_ISDIR(sb->st_mode))?rmdir(fpath):unlink(fpath);
+
+  if (rv) {
+    perror(fpath);
+  }
+
+  return rv;
+}
+
+int rmrf(char *path) {
+  return nftw(path, unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
 }

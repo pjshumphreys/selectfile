@@ -2,11 +2,11 @@
 output interface is working correctly*/
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
 
 /*the real entry point for the html5 version of querycsv. we can't use main as it's treated specially on emscripten and so can only be called once (on page load which we don't want) */
+//int realmain(int argc, char **argv);
+//*
 int realmain(int argc, char **argv) {
   int i;
 
@@ -22,6 +22,7 @@ int realmain(int argc, char **argv) {
   
   return 0;
 }
+//*/
 
 int wrapmain(char *path, char* filename) {
   int retval;
