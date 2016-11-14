@@ -40,6 +40,7 @@
     consoleWrapper,
     consoleScroller,
     consolePre,
+    addFolderNumber = 1,
     
     addListEntry = Module.Runtime.addFunction(function(name, type, modified, size) { 
       var a, b;
@@ -284,12 +285,16 @@
             updateSelection();
 
             if(currentPath != a.newState.data.path) {
+              addFolderNumber = addFolderNumber == 1?2:1;
+
               if(a.newState.data.path.length > currentPath.length) {
                 currentPath = a.newState.data.path;
+                populateFolder();
                 folderFromRight(true);
               }
               else {
                 currentPath = a.newState.data.path;
+                populateFolder();
                 folderFromLeft(false);
               }
             }
@@ -468,7 +473,9 @@
 
       switch(currentState) {
         case "folder":
-          refreshFolder();
+          myScroll.refresh();
+          myScroll3.refresh();
+          myScroll2.refresh();
         break;
 
         case "settings":
@@ -782,9 +789,9 @@
     
     Module.FS.syncfs(false, refreshFolder);
   }
-  
-  function refreshFolder(err) {
-    currentFolderUl = $('.currentFolder .scroller ul');
+
+  function populateFolder() {
+    currentFolderUl = $('#folder'+addFolderNumber+' .scroller ul');
     currentFolderUl.empty();
     Module.ccall(
       'getEntries',
@@ -802,6 +809,10 @@
         addListEntry
       ]
     );
+  }
+  
+  function refreshFolder() {
+    populateFolder();
 
     myScroll.refresh();
     myScroll3.refresh();

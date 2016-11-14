@@ -305,7 +305,7 @@ body {
   left: 0;
   right:0;
   overflow: hidden;
-  padding:8px;
+  padding:5px 14px;
   margin:0;
 }
 
@@ -511,16 +511,17 @@ body {
 .wrapper3 h2 {
   width: 100%;
   font-size: 14px;
+  font-weight:bold;
   margin: 0 0 10px;
   border-bottom: 2px solid #ccc;
-  padding: 0 5px 5px;
+  padding: 7px 7px 6px;
   color:#333;
 }
 
 .wrapper3 label {
   width: 100%;
   font-size: 18px;
-  padding: 0 35px 7px 5px;
+  padding: 3px 22px 7px 7px;
   display:inline-block;
   color:#333;
 }
@@ -548,7 +549,7 @@ body {
 .wrapper3 select {
   width: 100%;
   font-size: 14px;
-  padding: 0 0 7px;
+  padding: 0 8px 5px;
   background:transparent;
   border: 0 !important;  /*Removes border*/
   -webkit-appearance: none;
@@ -580,7 +581,7 @@ body {
 
 .reverse span {
   font-size: 14px;
-  margin-left: 5px;
+  margin-left: 7px;
   margin-right:35px;
   display:inline-block;
 }
