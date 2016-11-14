@@ -788,7 +788,7 @@ input[type=checkbox] + label {
 }
 
 .scroller li button.pushed {
-  background:hsl(0,0%,93%);
+  background:#ededed;
 }
 
 .scroller li button.selected {

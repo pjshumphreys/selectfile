@@ -1,0 +1,4 @@
+hook up folder tabs
+hook up settings (honouring, saving and loading)
+hook up cut and paste
+fix any further bugs found

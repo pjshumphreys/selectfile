@@ -87,6 +87,7 @@
     doTap = true;
 
     if(selectMode == false) {
+      $('.longTapping').removeClass('longTapping');
       targetElem.addClass('longTapping');
     }
     else {
@@ -304,6 +305,7 @@
           }
           else {
             currentPath = a.newState.data.path;
+            populateFolder();
             pageFromLeft('folder', false);
           }
         } break;
@@ -728,7 +730,7 @@
     $('.selected').removeClass('selected');
     updateSelection();
     
-    Module.FS.syncfs(false, refreshFolder);
+    Module.FS.syncfs(false, refreshFolder); //webfs to indexeddb 
   }
   
   function renameEntry() {
