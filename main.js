@@ -871,7 +871,7 @@
       width += $(this).outerWidth(true);
     });
 
-    $('#scroller2').width(width);
+    $('#scroller2').css("width","auto").width(width);
     myScroll2.refresh();
     myScroll2.scrollTo(myScroll2.maxScrollX, 0, 400);
   }
