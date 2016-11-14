@@ -4,7 +4,6 @@
   var
     oldclass,
     newclass,
-    depth = 1,
     stateQueue = [],
     inactive = !0,
     wrapper,
@@ -41,6 +40,7 @@
     consoleScroller,
     consolePre,
     addFolderNumber = 1,
+    breadCrumbUl,
     
     addListEntry = Module.Runtime.addFunction(function(name, type, modified, size) { 
       var a, b;
@@ -109,7 +109,7 @@
       History.pushState({
             type: "selection",
             path: currentPath,
-            depth: 2
+            depth: currentPath.split("/").length-1
           },
           d.title,
           "/Select"
@@ -171,6 +171,12 @@
     }
   }
 
+  function bcGotoActions(e) {
+    doTap = true;
+    selectMode = false;
+    gotoActions(e);
+  }
+
   function gotoActions(e) {
     if(doTap == true) {
       doTap = false;
@@ -180,15 +186,16 @@
       }
       else if(inactive) {
         var btn = $(e.target).closest('button');
+        var path = btn.attr('data-filepath');
 
         if(btn.hasClass('folder')) {
           History.pushState({
               type: "folder",
-              path: btn.attr('data-filepath'),
-              depth: 2
+              path: path,
+              depth: path.split("/").length-1
             },
             d.title,
-            btn.attr('data-filepath').slice(0, -1)
+            path.slice(0, -1)
           );
         }
         else {
@@ -288,14 +295,16 @@
             if(currentPath != a.newState.data.path) {
               addFolderNumber = addFolderNumber == 1?2:1;
 
-              if(a.newState.data.path.length > currentPath.length) {
+              if(a.newState.data.depth > currentPath.split("/").length-1) {
                 currentPath = a.newState.data.path;
                 populateFolder();
+                updateBreadCrumb();
                 folderFromRight(true);
               }
               else {
                 currentPath = a.newState.data.path;
                 populateFolder();
+                updateBreadCrumb();
                 folderFromLeft(false);
               }
             }
@@ -306,6 +315,7 @@
           else {
             currentPath = a.newState.data.path;
             populateFolder();
+            updateBreadCrumb();
             pageFromLeft('folder', false);
           }
         } break;
@@ -477,7 +487,6 @@
         case "folder":
           myScroll.refresh();
           myScroll3.refresh();
-          myScroll2.refresh();
         break;
 
         case "settings":
@@ -499,6 +508,13 @@
 
     if(inactive && stateQueue.length) {
       setTimeout(serviceStateQueue, 1);
+    }
+  }
+
+  function fadedOut(e) {
+    e = $(e);
+    if(parseFloat(e.css('opacity')) < 0.05) {
+      e.remove();
     }
   }
 
@@ -812,13 +828,59 @@
       ]
     );
   }
+
+  function updateBreadCrumb() {
+    var
+      i, len,
+      removeRest = false,
+      folderNames = currentPath.replace(/\/(\/)*/g, "/").replace(/(^\/|\/$)/g, "").split("/"),
+      list = breadCrumbUl.find('li'),
+      item,
+      path = "/";
+
+    list.each(function(index) {
+      item = $(this);
+
+      if(removeRest || (folderNames[0] != item.find('button').text() && (removeRest = true))) {   //yes the single equals is intentional
+        item.remove();
+      }
+      else {
+        path+=folderNames.shift()+"/";
+
+        if(folderNames.length == 0) {
+          item.addClass('active');
+        }
+        else {
+          item.removeAttr('class');
+        }
+      }
+    });
+
+    if(len = folderNames.length) {
+      for(i = 0, len-=1; i <= len; i++) {
+        path+=folderNames[i]+"/";
+        item = $('<li'+(i==len?' class="active"':'')+'><button type="button" class="folder" data-filepath="'+path+'"></button></li>');
+        item.find('button').text(folderNames[i]);
+        breadCrumbUl.append(item);
+      }
+    }
+
+    var width = 0;
+
+    breadCrumbUl.find('li').each(function() {
+      width += $(this).outerWidth(true);
+    });
+
+    $('#scroller2').width(width);
+    myScroll2.refresh();
+    myScroll2.scrollTo(myScroll2.maxScrollX, 0, 400);
+  }
   
   function refreshFolder() {
     populateFolder();
 
     myScroll.refresh();
     myScroll3.refresh();
-    myScroll2.refresh();
   }
 
   function round(value, exp) {
@@ -959,15 +1021,6 @@
 
     $(window).on('statechange', stateChange);
 
-    //get what the width of the horizontal folder tab scroller should be
-    var width = 0;
-
-    $('#scroller2 ul li').each(function() {
-      width += $(this).outerWidth(!0);
-    });
-
-    $('#scroller2').width(width);
-
     //Set up the IScroll objects
     myScroll = new IScroll('#folder1', {
       bounce : false,
@@ -988,7 +1041,7 @@
         deceleration : 0.0001,
         scrollX : true,
         scrollY : false,
-        click:true
+        tap:true
       }),
 
     myScroll5 = new IScroll('#console', {
@@ -1012,6 +1065,12 @@
     //start of event handlers
 
     $('.pt-perspective').on('animationend', animEnd);
+
+    breadCrumbUl = $('#wrapper2 #scroller2 ul');
+    breadCrumbUl.
+      on('animationend', 'li', fadedOut).
+      on('click', 'button', bcGotoActions).
+      on('keyup', 'button', kbGotoActions);
 
     myScroll.on('scrollCancel', stopTap);
     myScroll.on('scrollStart', stopTap);
@@ -1085,12 +1144,13 @@
       url = "/Documents"
     }
 
+    updateBreadCrumb();
     refreshFolder();
 
     History.replaceState({
         type: "folder",
         path: currentPath,
-        depth: 1
+        depth: currentPath.split("/").length-1
       },
       d.title,
       url
