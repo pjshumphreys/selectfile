@@ -13,6 +13,7 @@ var WORKERFILENAME = 'worker.js';
             'extern/iscroll-5.1.3.js',
             'extern/picup-2.1.2.js',
             'extern/jquery.history.js',
+            'extern/jquery.animate.enhanced-1.11.js',
             'extern/_.debounce.js',
             'helper.js'
           ], c);

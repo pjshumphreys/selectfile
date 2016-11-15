@@ -41,6 +41,7 @@
     consolePre,
     addFolderNumber = 1,
     breadCrumbUl,
+    oldSelectedCount = 0,
     
     addListEntry = Module.Runtime.addFunction(function(name, type, modified, size) { 
       var a, b;
@@ -75,7 +76,6 @@
           '</button></li>').appendTo(currentFolderUl);
       }
     }),
-
     xxx;
 
   function startTap(e) {
@@ -122,7 +122,7 @@
 
   function updateSelection() {
     var b = $('.selected').length;
-
+    
     if(b === 0) {
       selectMode = false;
       if(currentState === 'selection') {
@@ -136,12 +136,23 @@
         $('#renameButton').fadeOut(100);
       }
       else {
-        $('#renameButton').fadeIn(100);
+        if(oldSelectedCount !== 0) {
+          $('#renameButton').fadeIn(100);
+        }
+        else {
+          $('#renameButton').show();
+        }
       }
       
-      $('#alt').fadeIn(100);
+      if(oldSelectedCount === 0) {
+        $('#alt').fadeIn(100);
+      }
     }
+
+    oldSelectedCount = b;
   }
+
+  
 
   function toggleButtonSelection(e) {
     var a = $(e.target).closest('button').toggleClass('selected');
@@ -1080,7 +1091,7 @@
     breadCrumbUl = $('#wrapper2 #scroller2 ul');
     breadCrumbUl.
       on('animationend', 'li', fadedOut).
-      on('click', 'button', bcGotoActions).
+      on('tap', 'button', bcGotoActions).
       on('keyup', 'button', kbGotoActions);
 
     myScroll.on('scrollCancel', stopTap);
@@ -1088,7 +1099,7 @@
     myScroll3.on('scrollCancel', stopTap);
     myScroll3.on('scrollStart', stopTap);
   
-    $('.fileList').
+    $('#folder1, #folder2').
       on('mousedown touchstart', 'button', startTap).
       on('animationend', 'button', longTap).
       on('tap', 'button', gotoActions).
