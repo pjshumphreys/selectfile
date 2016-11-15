@@ -299,12 +299,16 @@
                 currentPath = a.newState.data.path;
                 populateFolder();
                 updateBreadCrumb();
+                myScroll2.refresh();
+                myScroll2.scrollTo(myScroll2.maxScrollX, 0, 400);
                 folderFromRight(true);
               }
               else {
                 currentPath = a.newState.data.path;
                 populateFolder();
                 updateBreadCrumb();
+                myScroll2.refresh();
+                myScroll2.scrollTo(myScroll2.maxScrollX, 0, 400);
                 folderFromLeft(false);
               }
             }
@@ -315,7 +319,6 @@
           else {
             currentPath = a.newState.data.path;
             populateFolder();
-            updateBreadCrumb();
             pageFromLeft('folder', false);
           }
         } break;
@@ -366,7 +369,7 @@
     }
   }
 
-  function consoleRefresh(lineHeight) {
+  function consoleRefresh(scrollToBottom) {
     var
         x = myScroll5.x,
         y = myScroll5.y,
@@ -404,16 +407,16 @@
       doo = true;
     }
 
-    if(lineHeight) {
-      y-=lineHeight;
-      doo = true;
-    }
 
-    if(doo) {
+    if(!scrollToBottom && doo) {
       myScroll5.scrollTo(x, y, 0);
     }
     
     myScroll5.refresh();
+
+    if(scrollToBottom) {
+      myScroll5.scrollTo(0, myScroll5.maxScrollY, 0);
+    }
   }
 
   function updateDownloadLink() {
@@ -485,8 +488,7 @@
 
       switch(currentState) {
         case "folder":
-          myScroll.refresh();
-          myScroll3.refresh();
+          refreshIScroll();
         break;
 
         case "settings":
@@ -872,14 +874,17 @@
     });
 
     $('#scroller2').css("width","auto").width(width);
-    myScroll2.refresh();
-    myScroll2.scrollTo(myScroll2.maxScrollX, 0, 400);
   }
   
   function refreshFolder() {
     populateFolder();
-
+    refreshIScroll();
+  }
+  
+  function refreshIScroll() {
     myScroll.refresh();
+    myScroll2.refresh();
+    myScroll2.scrollTo(myScroll2.maxScrollX, 0, 400);
     myScroll3.refresh();
   }
 
@@ -938,7 +943,7 @@
   function output_text(text, isStderr) {
     consolePre.append($('<span />').text(text).css("font-weight", isStderr?"bold":"normal"), $('<br/>'));
 
-    consoleRefresh(17);
+    consoleRefresh(true);
   }
   
   function fromEmscripten(create, remove) {
@@ -996,12 +1001,12 @@
       Module.FS.syncfs(4, persistLocal); //worker to memfs
     }
     else {
-      Module.FS.syncfs(true, refreshFolder); //indexeddb to memfs
+      Module.FS.syncfs(true, populateFolder); //indexeddb to memfs
     }
   }
 
   function persistLocal() {
-    Module.FS.syncfs(false, refreshFolder); //memfs to indexeddb
+    Module.FS.syncfs(false, populateFolder); //memfs to indexeddb
   }
   
   function terminateWorker() {
@@ -1053,11 +1058,17 @@
         tap:true
       });
 
-    $(window).resize(function() {
-      if(currentState == "console") {
-        consoleRefresh();
+    $(window).resize(debounce(function() {
+      switch(currentState) {
+        case "console": {
+          consoleRefresh();
+        } break;
+
+        case "folder": {
+          myScroll2.scrollTo(myScroll2.maxScrollX, 0, 400);
+        } break;
       }
-    });
+    }, 420));
 
     consoleWrapper = $('#console');
     consoleScroller = consoleWrapper.find('.scroller');
