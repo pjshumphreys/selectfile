@@ -303,6 +303,24 @@
             $('.selected').removeClass('selected');
             updateSelection();
 
+            if(!Module.ccall(
+                'folderExists',
+                'number',
+                ['string'],
+                [a.newState.data.path]
+            )) {
+              do {
+                a.newState.data.path = a.newState.data.path.replace(/[^\/]+\/$/, "");
+              } while(!Module.ccall(
+                  'folderExists',
+                  'number',
+                  ['string'],
+                  [a.newState.data.path]
+              ));
+
+              a.newState.data.depth = a.newState.data.path.split("/").length-1;
+            }
+
             if(currentPath != a.newState.data.path) {
               addFolderNumber = addFolderNumber == 1?2:1;
 
@@ -328,6 +346,24 @@
             }
           }
           else {
+            if(!Module.ccall(
+                'folderExists',
+                'number',
+                ['string'],
+                [a.newState.data.path]
+            )) {
+              do {
+                a.newState.data.path = a.newState.data.path.replace(/[^\/]+\/$/, "");
+              } while(!Module.ccall(
+                  'folderExists',
+                  'number',
+                  ['string'],
+                  [a.newState.data.path]
+              ));
+
+              a.newState.data.depth = a.newState.data.path.split("/").length-1;
+            }
+
             currentPath = a.newState.data.path;
             populateFolder();
             pageFromLeft('folder', false);
