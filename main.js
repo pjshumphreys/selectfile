@@ -42,6 +42,13 @@
     addFolderNumber = 1,
     breadCrumbUl,
     oldSelectedCount = 0,
+    db,
+    settings = {
+      id:"settings",
+      sortBy:1, //1=name, 2 = size, 3 = date
+      isDescending:0, //0 = no, 1 = yes
+      usePicup:0
+    },
     
     addListEntry = Module.Runtime.addFunction(function(name, type, modified, size) { 
       var a, b;
@@ -871,8 +878,8 @@
       ],
       [
         currentPath,
-        1,
-        1,
+        settings.sortBy,
+        settings.isDescending,
         addListEntry
       ]
     );
@@ -1183,10 +1190,62 @@
 
     // sync from persisted state into memory and then
     // refresh the folder view
-    Module.FS.syncfs(true, setFolder); //indexeddb to local 
+    Module.FS.syncfs(true, loadSettings); //indexeddb to local 
   }
 
-  function setFolder() {
+  function loadSettings() {
+    var openRequest = indexedDB.open("querycsv",1);
+    openRequest.onupgradeneeded = dbUpgradeNeeded;
+    openRequest.onsuccess = dbSuccess;
+  }
+
+  function dbUpgradeNeeded(e) {
+    var thisDB = e.target.result;
+
+    if(!thisDB.objectStoreNames.contains("settings")) {
+      thisDB.createObjectStore("settings", {keyPath:"id"});
+    }
+  }
+
+  function dbSuccess(e) {
+    db = e.target.result;
+
+    db.transaction(["settings"]).objectStore("settings").get("settings").onsuccess = getSettings;
+  }
+
+  function changeSortBy() {
+    settings.sortBy = parseInt($(this).val(), 10);
+    if(db) {
+      db.transaction(["settings"],"readwrite").objectStore("settings").put(settings);
+    }
+  }
+
+  function changePicup() {
+    settings.usePicup = $(this).prop("checked")?1:0;
+    if(db) {
+      db.transaction(["settings"],"readwrite").objectStore("settings").put(settings);
+    }
+  }
+
+  function changeAscending() {
+    settings.isDescending = $(this).prop("checked")?1:0;
+    if(db) {
+      db.transaction(["settings"],"readwrite").objectStore("settings").put(settings);
+    }
+  }
+
+  function getSettings(event) {
+    if(event.target.result) {
+      settings = event.target.result;
+    }
+    else {
+      db.transaction(["settings"],"readwrite").objectStore("settings").add(settings);
+    }
+
+    $('#sortBy').on('change', changeSortBy).val(settings.sortBy);
+    $('#ascending').on('change', changeAscending).prop('checked', settings.isDescending);
+    $('#usePicup').on('change', changePicup).prop('checked', settings.usePicup);
+    
     //if the url is "/", or doesn't begin with "/Documents" doesn't refer to a folder or doesn't exist then set it to "/Documents"
     var url = decodeURIComponent(History.getState().hash.replace(/\?.*/, "")).replace(/\/(\/)*/g, "/").replace(/\/$/, "");
 

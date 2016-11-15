@@ -139,7 +139,18 @@ void insert(
       }
       else if(comparison == 0) {
         switch(sortBy) {
-          case 2: //date
+          case 2: //size
+            if(currentNode->size != size) {
+              if(currentNode->size > size) {
+                comparison = -1;
+              }
+              else {
+                comparison = 1;
+              }
+            }
+          break;
+
+          case 3: //date
             if(currentNode->modified != modified) {
               if(currentNode->modified > modified) {
                 comparison = -1;
@@ -150,16 +161,7 @@ void insert(
             }
           break;
 
-          case 3: //size
-            if(currentNode->size != size) {
-              if(currentNode->size > size) {
-                comparison = -1;
-              }
-              else {
-                comparison = 1;
-              }
-            }
-          break;
+          
         }
 
         if(comparison == 0) {
