@@ -567,13 +567,6 @@
     }
   }
 
-  function fadedOut(e) {
-    e = $(e);
-    if(parseFloat(e.css('opacity')) < 0.05) {
-      e.remove();
-    }
-  }
-
   function editorInit() {
     editorScroll = new IScroll('#editor', {
         bounce : false,
@@ -1133,7 +1126,6 @@
 
     breadCrumbUl = $('#wrapper2 #scroller2 ul');
     breadCrumbUl.
-      on('animationend', 'li', fadedOut).
       on('tap', 'button', bcGotoActions).
       on('keyup', 'button', kbGotoActions);
 
@@ -1243,8 +1235,8 @@
     }
 
     $('#sortBy').on('change', changeSortBy).val(settings.sortBy);
-    $('#ascending').on('change', changeAscending).prop('checked', settings.isDescending);
-    $('#usePicup').on('change', changePicup).prop('checked', settings.usePicup);
+    $('#ascending').on('change', changeAscending).prop('checked', settings.isDescending).each(toggleCheckbox);
+    $('#usePicup').on('change', changePicup).prop('checked', settings.usePicup).each(toggleCheckbox);
     
     //if the url is "/", or doesn't begin with "/Documents" doesn't refer to a folder or doesn't exist then set it to "/Documents"
     var url = decodeURIComponent(History.getState().hash.replace(/\?.*/, "")).replace(/\/(\/)*/g, "/").replace(/\/$/, "");

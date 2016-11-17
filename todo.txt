@@ -1,2 +1,3 @@
 hook up cut and paste
+add app cache capability
 fix any further bugs found
